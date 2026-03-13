@@ -3,6 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
+    
     <title>Planning DAR - 7 Jours</title>
     <style>
         :root { --primary: #005f73; --bg: #f4f4f9; --card: #ffffff; }
@@ -12,30 +14,49 @@
         .loader { text-align: center; font-style: italic; color: #666; margin-top: 50px; }
         .day-card { background: var(--card); border-radius: 10px; padding: 15px; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
         .day-title { font-size: 1.2em; font-weight: bold; color: var(--primary); border-bottom: 2px solid #e0e0e0; padding-bottom: 5px; margin-bottom: 10px; }
-        
-        /* C'EST ICI QUE L'AFFICHAGE A CHANGÉ */
         .post-row { display: flex; align-items: center; padding: 5px 0; border-bottom: 1px solid #f0f0f0; }
         .post-row:last-child { border-bottom: none; }
-        
-        /* On donne une largeur fixe au poste pour que tous les noms de médecins s'alignent parfaitement juste à côté */
         .post-name { font-weight: bold; color: #e9af2f; width: 70px; flex-shrink: 0; } 
-        
         .doctor-name { font-weight: 500; border-left: 2px solid #f0f0f0; padding-left: 10px; }
     </style>
 </head>
 <body>
-    <div class="container">
+    <div class="container" id="contenu-principal" style="display: none;">
         <h1>🏥 Planning DAR</h1>
         <div id="app"><div class="loader">Chargement du planning en cours...</div></div>
     </div>
 
     <script>
-        // ⚠️ REMETS TON URL ICI
+        // 🛑 SYSTÈME DE MOT DE PASSE SIMPLE
+        const motDePasseAttendu = "DARD2026"; // <-- MODIFIE LE MOT DE PASSE ICI
+        
+        // On vérifie si le mot de passe est déjà enregistré dans le téléphone
+        let mdpSaisi = localStorage.getItem("mdp_dar");
+
+        if (mdpSaisi !== motDePasseAttendu) {
+            mdpSaisi = prompt("🔒 Ce site est privé. Veuillez entrer le mot de passe :");
+            if (mdpSaisi === motDePasseAttendu) {
+                // On sauvegarde pour ne pas lui redemander à chaque fois
+                localStorage.setItem("mdp_dar", mdpSaisi);
+            }
+        }
+
+        if (mdpSaisi === motDePasseAttendu) {
+            // Si le mot de passe est bon, on affiche le site
+            document.getElementById('contenu-principal').style.display = 'block';
+            chargerPlanning();
+        } else {
+            // Sinon on bloque tout
+            document.body.innerHTML = "<h2 style='text-align:center; color:red; margin-top:50px;'>⛔ Accès refusé</h2>";
+        }
+
+        // --- LE RESTE DU CODE NE CHANGE PAS ---
         const API_URL = "data.json";
 
         async function chargerPlanning() {
             try {
-                const reponse = await fetch(API_URL);
+                // ... (le code ajoute un petit cache-buster pour forcer la mise à jour)
+                const reponse = await fetch(API_URL + "?v=" + new Date().getTime());
                 const donnees = await reponse.json();
                 
                 const conteneur = document.getElementById('app');
@@ -47,29 +68,21 @@
                 }
 
                 donnees.forEach(jour => {
-                    let htmlCard = `<div class="day-card">
-                                      <div class="day-title">${jour.dateStr}</div>`;
-                    
+                    let htmlCard = `<div class="day-card"><div class="day-title">${jour.dateStr}</div>`;
                     if (jour.postes.length === 0) {
-                        htmlCard += `<div class="post-row"><i>Aucune donnée (planning non rempli)</i></div>`;
+                        htmlCard += `<div class="post-row"><i>Aucune donnée</i></div>`;
                     } else {
                         jour.postes.forEach(p => {
-                            htmlCard += `<div class="post-row">
-                                            <span class="post-name">${p.poste}</span>
-                                            <span class="doctor-name">${p.medecin}</span>
-                                         </div>`;
+                            htmlCard += `<div class="post-row"><span class="post-name">${p.poste}</span><span class="doctor-name">${p.medecin}</span></div>`;
                         });
                     }
                     htmlCard += `</div>`;
                     conteneur.innerHTML += htmlCard;
                 });
             } catch (erreur) {
-                document.getElementById('app').innerHTML = `<div style="color:red; text-align:center;">Erreur de connexion au planning.</div>`;
-                console.error(erreur);
+                document.getElementById('app').innerHTML = `<div style="color:red; text-align:center;">Erreur de connexion.</div>`;
             }
         }
-
-        chargerPlanning();
     </script>
 </body>
 </html>
