@@ -14,10 +14,16 @@
         .loader { text-align: center; font-style: italic; color: #666; margin-top: 50px; }
         .day-card { background: var(--card); border-radius: 10px; padding: 15px; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
         .day-title { font-size: 1.2em; font-weight: bold; color: var(--primary); border-bottom: 2px solid #e0e0e0; padding-bottom: 5px; margin-bottom: 10px; }
-        .post-row { display: flex; align-items: center; padding: 5px 0; border-bottom: 1px solid #f0f0f0; }
+        .post-row { display: flex; align-items: center; padding: 8px 0; border-bottom: 1px solid #f0f0f0; }
         .post-row:last-child { border-bottom: none; }
         .post-name { font-weight: bold; color: #e9af2f; width: 70px; flex-shrink: 0; } 
-        .doctor-name { font-weight: 500; border-left: 2px solid #f0f0f0; padding-left: 10px; }
+        .doctor-name { font-weight: 500; border-left: 2px solid #f0f0f0; padding-left: 10px; flex-grow: 1; }
+        
+        /* NOUVEAU : Design des boutons de contact */
+        .contact-links { display: flex; gap: 10px; }
+        .btn-contact { text-decoration: none; font-size: 1.2em; background: #f0f0f0; border-radius: 50%; width: 32px; height: 32px; display: flex; justify-content: center; align-items: center; transition: 0.2s; }
+        .btn-call:hover { background: #d4edda; }
+        .btn-wa:hover { background: #d1ecf1; }
     </style>
 </head>
 <body>
@@ -27,12 +33,10 @@
     </div>
 
     <script>
-        // Le site va chercher le fichier data.json déposé par ton Google Apps Script
         const API_URL = "data.json";
 
         async function chargerPlanning() {
             try {
-                // Le "?v=" + new Date().getTime() force ton téléphone à télécharger la dernière version à chaque fois !
                 const reponse = await fetch(API_URL + "?v=" + new Date().getTime());
                 const donnees = await reponse.json();
                 
@@ -50,7 +54,24 @@
                         htmlCard += `<div class="post-row"><i>Aucune donnée</i></div>`;
                     } else {
                         jour.postes.forEach(p => {
-                            htmlCard += `<div class="post-row"><span class="post-name">${p.poste}</span><span class="doctor-name">${p.medecin}</span></div>`;
+                            // --- NOUVEAUTÉ : Création des boutons si on a le numéro ---
+                            let boutonsContact = "";
+                            if (p.telephone) {
+                                // On enlève le '+' pour le lien WhatsApp qui préfère les numéros purs
+                                let telWhatsApp = p.telephone.replace('+', ''); 
+                                boutonsContact = `
+                                    <div class="contact-links">
+                                        <a href="tel:${p.telephone}" class="btn-contact btn-call" title="Appeler">📞</a>
+                                        <a href="https://wa.me/${telWhatsApp}" class="btn-contact btn-wa" title="WhatsApp">💬</a>
+                                    </div>
+                                `;
+                            }
+
+                            htmlCard += `<div class="post-row">
+                                            <span class="post-name">${p.poste}</span>
+                                            <span class="doctor-name">${p.medecin}</span>
+                                            ${boutonsContact}
+                                         </div>`;
                         });
                     }
                     htmlCard += `</div>`;
