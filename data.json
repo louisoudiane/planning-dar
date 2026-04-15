@@ -70,9 +70,9 @@
     "timestamp": 1776290400000,
     "postes": [
       {
-        "medecin": "MS",
+        "medecin": "GA",
         "poste": "P",
-        "telephone": "687691545"
+        "telephone": "666311467"
       },
       {
         "medecin": "JE",
@@ -90,9 +90,9 @@
         "telephone": null
       },
       {
-        "medecin": "GA",
+        "medecin": "MS",
         "poste": "ECMO",
-        "telephone": "666311467"
+        "telephone": "687691545"
       },
       {
         "medecin": "MM",
@@ -120,9 +120,9 @@
         "telephone": "630092616"
       },
       {
-        "medecin": "GA",
+        "medecin": "MS",
         "poste": "EXT",
-        "telephone": "666311467"
+        "telephone": "687691545"
       }
     ]
   },
